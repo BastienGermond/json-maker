@@ -231,9 +231,13 @@ char* json_end( char* dest, size_t* remLen ) {
 
 #ifdef NO_SPRINTF
 
-static char* format( char* dest, int len, int isnegative ) {
-    if ( isnegative )
+static char* format( char* dest, int len, int isnegative, size_t *remLen) {
+    if ( isnegative ) {
+        if (*remLen == 0)
+            return dest;
         dest[ len++ ] = '-';
+        (*remLen)--;
+    }
     dest[ len ] = '\0';
     int head = 0;
     int tail = len - 1;
@@ -256,11 +260,14 @@ static char* func( char* dest, type val, size_t *remLen) { \
     utype num = isnegative ? -val : val;    \
     int len = 0;                            \
     while( 0 != num ) {                     \
+        if (*remLen == 0)                   \
+            return dest;                    \
         int rem = num % base;               \
         dest[ len++ ] = rem + '0';          \
+        (*remLen)--;                        \
         num = num / base;                   \
     }                                       \
-    return format( dest, len, isnegative ); \
+    return format( dest, len, isnegative, remLen ); \
 }                                           \
 
 #define json_num( func, func2, type )                       \
