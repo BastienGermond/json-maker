@@ -102,6 +102,14 @@ char* json_bool( char* dest, char const* name, int value, size_t* remLen );
   * @return Pointer to the new end of JSON under construction. */
 char* json_null( char* dest, char const* name, size_t* remLen );
 
+/** Add a null property in a JSON string with explicit name length.
+  * @param dest Pointer to the end of JSON under construction.
+  * @param name Pointer to null-terminated string or null for unnamed.
+  * @param name_len Length of the name.
+  * @param remLen Pointer to remaining length of dest
+  * @return Pointer to the new end of JSON under construction. */
+char* json_null_len( char* dest, const char* name, size_t name_len, size_t* remLen );
+
 /** Add an integer property in a JSON string.
   * @param dest Pointer to the end of JSON under construction.
   * @param name Pointer to null-terminated string or null for unnamed.
