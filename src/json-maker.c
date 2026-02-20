@@ -53,6 +53,20 @@ static char* atoa( char* dest, char const* src, size_t* remLen  ) {
     return dest;
 }
 
+/** Copy a string with explicit length, character by character.
+  * @param dest Destination memory block.
+  * @param src Source string.
+  * @param src_len Length of the source string.
+  * @param remLen Pointer to remaining length of dest
+  * @return Pointer to the next char in destination after the copy. */
+static char* atoa_len( char* dest, const char* src, size_t src_len, size_t* remLen  ) {
+    for( ; *src != '\0' && *remLen != 0 && src_len > 0; ++dest, ++src, --*remLen, --src_len )
+        *dest = *src;
+    if (*remLen != 0)
+        *dest = '\0';
+    return dest;
+}
+
 /* Open a JSON object in a JSON string. */
 char* json_objOpen( char* dest, char const* name, size_t* remLen  ) {
     if ( NULL == name )
@@ -205,6 +219,21 @@ static char* primitivename( char* dest, char const* name, size_t* remLen  ) {
     return dest;
 }
 
+/** Add the name of a primitive property.
+  * @param dest Destination memory.
+  * @param name The name of the property.
+  * @param name_len Length of the name.
+  * @param remLen Pointer to remaining length of dest
+  * @return Pointer to the next char. */
+static char* primitivename_len( char* dest, char const* name, size_t name_len, size_t* remLen  ) {
+    if( NULL == name || name_len == 0 )
+        return dest;
+    dest = chtoa( dest, '\"', remLen );
+    dest = atoa_len( dest, name, name_len, remLen );
+    dest = atoa( dest, "\":", remLen );
+    return dest;
+}
+
 /*  Add a boolean property in a JSON string. */
 char* json_bool( char* dest, char const* name, int value, size_t* remLen  ) {
     dest = primitivename( dest, name, remLen );
@@ -215,6 +244,13 @@ char* json_bool( char* dest, char const* name, int value, size_t* remLen  ) {
 /* Add a null property in a JSON string. */
 char* json_null( char* dest, char const* name, size_t* remLen  ) {
     dest = primitivename( dest, name, remLen );
+    dest = atoa( dest, "null,", remLen );
+    return dest;
+}
+
+/* Add a null property in a JSON string, with explicit name length. */
+char* json_null_len(char* dest, const char* name, size_t name_len, size_t* remLen  ) {
+    dest = primitivename_len(dest, name, name_len, remLen);
     dest = atoa( dest, "null,", remLen );
     return dest;
 }
