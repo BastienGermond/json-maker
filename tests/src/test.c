@@ -273,8 +273,8 @@ static int real( void ) {
     p = json_objClose( p, &remLen );
     p = json_end( p, &remLen );
 #ifdef NO_SPRINTF
-    static char const rslt1[] = "{\"data\":[0,0,5000000]}";
-    static char const rslt2[] = "{\"data\":[0,0,5000000]}";
+    static char const rslt1[] = "{\"data\":[0.2,0.000002,5000000]}";
+    static char const rslt2[] = "{\"data\":[0.2,0.000002,5000000]}";
 #else
     static char const rslt1[] = "{\"data\":[0.2,2e-006,5e+006]}";
     static char const rslt2[] = "{\"data\":[0.2,2e-06,5e+06]}";
@@ -283,6 +283,25 @@ static int real( void ) {
     check( 0 == strcmp( buff, rslt1 ) ||  0 == strcmp( buff, rslt2 ) );
     done();
 }
+
+#ifdef NO_SPRINTF
+static int decimals( void ) {
+    char buff[128];
+    size_t remLen = sizeof( buff );
+    char* p = json_objOpen( buff, NULL, &remLen );
+    p = json_arrOpen( p, "data", &remLen );
+    static double const lut[] = { 21.5, -21.5, 0.8f, 20.0, 0.05, 1.9999999, 0.1234564 };
+    for( int i = 0; i < sizeof lut / sizeof *lut; ++i )
+        p = json_double( p, NULL, lut[i], &remLen );
+    p = json_arrClose( p, &remLen );
+    p = json_objClose( p, &remLen );
+    p = json_end( p, &remLen );
+    static char const rslt[] = "{\"data\":[21.5,-21.5,0.8,20,0.05,2,0.123456]}";
+    check( p - buff == sizeof rslt - 1 );
+    check( 0 == strcmp( buff, rslt ) );
+    done();
+}
+#endif
 
 static int bounds(void) {
     char buff[6];
@@ -320,6 +339,9 @@ int main( void ) {
         { integers,  "Integers values"          },
         { array,     "Array"                    },
         { real,      "Real"                     },
+#ifdef NO_SPRINTF
+        { decimals,  "Real without sprintf"     },
+#endif
         { bounds,    "Bounds"                   },
     };
     return test_suit( tests, sizeof tests / sizeof *tests );
