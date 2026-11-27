@@ -329,9 +329,24 @@ ALL_TYPES
 ALL_TYPES
 #undef X
 
-char* json_double( char* dest, char const* name, double value, size_t *remLen ) {
-    return json_verylong( dest, name, value, remLen );
+/* numtoa only fits integers: a double is rounded to 6 decimals, written
+   without its trailing zeros. */
+static char* doubletoa( char* dest, double val, size_t *remLen ) {
+    if ( val < 0 ) {
+        dest = chtoa( dest, '-', remLen );
+        val = -val;
+    }
+    long long const micros = (long long)( val * 1000000 + 0.5 );
+    dest = verylongtoa( dest, micros / 1000000, remLen );
+    long long decimals = micros % 1000000;
+    if ( 0 != decimals )
+        dest = chtoa( dest, '.', remLen );
+    for( ; 0 != decimals; decimals = decimals % 100000 * 10 )
+        dest = chtoa( dest, '0' + decimals / 100000, remLen );
+    return dest;
 }
+
+json_num( json_double, doubletoa, double )
 
 #else
 
